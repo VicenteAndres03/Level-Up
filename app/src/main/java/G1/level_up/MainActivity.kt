@@ -1,5 +1,6 @@
 package G1.level_up
 
+import G1.level_up.ui.HomeScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -19,24 +20,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             LevelUpTheme {
-                Greeting("Mundo Gamer")
+                HomeScreen()
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    LevelUpTheme {
-        Greeting("Android")
     }
 }
