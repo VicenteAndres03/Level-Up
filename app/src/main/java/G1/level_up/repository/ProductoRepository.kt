@@ -12,7 +12,10 @@ class ProductoRepository {
                 precio = 99.99,
                 categoria = "Accesorios",
                 stock = 25,
-                imagen = "url_ficticia_hyperx"
+                imagen = "url_ficticia_hyperx",
+                caracteristicas = "Accesorio innalambrico auditivo con micrófono y almohadillas de espuma viscoelástica...",
+                proveedor = "Hyperx",
+                
             ),
             Producto(
                 id = 2,
@@ -21,7 +24,10 @@ class ProductoRepository {
                 precio = 550.00,
                 categoria = "Consolas",
                 stock = 10,
-                imagen = "url_ficticia_ps5"
+                imagen = "url_ficticia_ps5",
+                caracteristicas = "Consola de videojuegos ps5 con memoria de 1TB + FC26",
+                proveedor = "Sony"
+
             ),
             Producto(
                 id = 3,
@@ -30,7 +36,10 @@ class ProductoRepository {
                 precio = 350.00,
                 categoria = "Sillas",
                 stock = 5,
-                imagen = "url_ficticia_silla"
+                imagen = "url_ficticia_silla",
+                caracteristicas = "Espuma de curado en frío pendiente de patente," +
+                                  "Apoyo óptimo independientemente de cómo te sientes",
+                proveedor = "Secret lab"
             ),
 
         )
