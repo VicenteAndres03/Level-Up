@@ -7,8 +7,8 @@ import G1.level_up.model.User
 import G1.level_up.repository.CartRepository
 import G1.level_up.repository.UserRepository
 import G1.level_up.viewmodel.HomeViewModel
+import android.app.Application
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -28,20 +28,22 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 
 @Composable
 fun ProductsScreen(
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = viewModel(), // Obtiene la instancia de tu ViewModel
     username: String?
 ) {
-    val productos by viewModel.productos.collectAsState()
     val context = LocalContext.current
+    val factory = HomeViewModelFactory(context.applicationContext as Application)
+    val viewModel: HomeViewModel = viewModel(factory = factory)
+    val productos by viewModel.productos.collectAsState()
     val userRepository = remember { UserRepository(context) }
     val cartRepository = remember { CartRepository(context) }
     var user by remember { mutableStateOf<User?>(null) }
@@ -94,17 +96,10 @@ fun ProductItem(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val imageRes = when {
-                producto.nombre.contains("PlayStation 5", ignoreCase = true) -> R.drawable.ps5
-                producto.nombre.contains("Headset", ignoreCase = true) -> R.drawable.audifonosgamer // Ejemplo\
-                producto.nombre.contains("Teclado Gamer", ignoreCase = true) -> R.drawable.tecladogamer
-                producto.nombre.contains("Silla Gamer Secretlab Titan", ignoreCase = true) -> R.drawable.silla
-                else -> R.drawable.logolevelup // Imagen por defecto
-            }
-
-            Image(
-                painter = painterResource(id = imageRes),
+            AsyncImage(
+                model = producto.imagen,
                 contentDescription = producto.nombre,
+                placeholder = painterResource(id = R.drawable.logolevelup),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(100.dp)
@@ -128,7 +123,7 @@ fun ProductItem(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "$${"%d".format(producto.precio)}", // Cambio de Double a INT
+                    text = "$${"%d".format(producto.precio)}",
                     color = Color(0xFFFF8C00), // Naranja energético
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 20.sp
@@ -150,3 +145,12 @@ fun ProductItem(
     }
 }
 
+class HomeViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return HomeViewModel(application) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}

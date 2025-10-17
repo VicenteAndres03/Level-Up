@@ -2,11 +2,13 @@ package G1.level_up.repository
 
 import android.content.ContentValues
 import android.content.Context
+import G1.level_up.LevelUpApplication
 import G1.level_up.model.Producto
 
 class CartRepository(context: Context) {
 
     private val dbHelper = DatabaseHelper(context)
+    private val productoRepository = (context.applicationContext as LevelUpApplication).productoRepository
 
     fun addToCart(userId: Long, productId: Int): Long {
         val db = dbHelper.writableDatabase
@@ -19,7 +21,6 @@ class CartRepository(context: Context) {
 
     fun getCartItems(userId: Long): Map<Producto, Int> {
         val db = dbHelper.readableDatabase
-        val productRepository = ProductoRepository()
 
         val cursor = db.query(
             DatabaseHelper.TABLE_CART,
@@ -40,10 +41,9 @@ class CartRepository(context: Context) {
         }
         cursor.close()
 
-        val allProducts = productRepository.obtenerProductos()
         val cartItems = mutableMapOf<Producto, Int>()
         for ((productId, count) in productCounts) {
-            val product = allProducts.find { it.id == productId }
+            val product = productoRepository.getProductById(productId)
             product?.let { cartItems[it] = count }
         }
         return cartItems
@@ -51,8 +51,6 @@ class CartRepository(context: Context) {
 
     fun removeFromCart(userId: Long, productId: Int) {
         val db = dbHelper.writableDatabase
-        // This will delete one entry for the given user and product.
-        // It relies on the ROWID, which is a unique id for each row in a table.
         db.execSQL("DELETE FROM ${DatabaseHelper.TABLE_CART} WHERE ROWID IN (SELECT ROWID FROM ${DatabaseHelper.TABLE_CART} WHERE ${DatabaseHelper.COLUMN_CART_USER_ID} = ? AND ${DatabaseHelper.COLUMN_CART_PRODUCT_ID} = ? LIMIT 1)",
             arrayOf(userId.toString(), productId.toString()))
     }
