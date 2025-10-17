@@ -120,6 +120,18 @@ fun LoginScreen(navController: NavController, onLoginSuccess: (String) -> Unit) 
         Spacer(modifier = Modifier.height(24.dp))
 
         TextButton(onClick = {
+            navController.navigate(Screen.AdminLogin.route)
+        }) {
+            Text(
+                text = "¿Eres administrador? Inicia sesión aquí",
+                color = PrimaryAccent,
+                fontSize = 14.sp
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        TextButton(onClick = {
             navController.navigate(Screen.Register.route)
         }) {
             Text(
