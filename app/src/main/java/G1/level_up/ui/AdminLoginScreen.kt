@@ -2,6 +2,9 @@ package G1.level_up.ui
 
 import G1.level_up.Navigation.Screen
 import G1.level_up.R
+import G1.level_up.ui.theme.ButtonAccent
+import G1.level_up.ui.theme.PrimaryDark
+import G1.level_up.ui.theme.TextColor
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

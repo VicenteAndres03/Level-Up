@@ -3,6 +3,7 @@ package G1.level_up.ui
 import G1.level_up.Navigation.Screen
 import G1.level_up.model.User
 import G1.level_up.repository.UserRepository
+import G1.level_up.ui.theme.PrimaryAccent
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*

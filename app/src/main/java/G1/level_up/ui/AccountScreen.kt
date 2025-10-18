@@ -1,6 +1,9 @@
 package G1.level_up.ui
 
 import G1.level_up.repository.UserRepository
+import G1.level_up.ui.theme.PrimaryAccent
+import G1.level_up.ui.theme.PrimaryDark
+import G1.level_up.ui.theme.TextColor
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

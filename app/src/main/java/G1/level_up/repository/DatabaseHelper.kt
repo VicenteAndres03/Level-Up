@@ -20,7 +20,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
      */
     companion object {
         private const val DATABASE_NAME = "level_up.db"
-        private const val DATABASE_VERSION = 7 // Se incrementa cada vez que hay un cambio en el esquema.
+        private const val DATABASE_VERSION = 8 // Se incrementa cada vez que hay un cambio en el esquema.
 
         // Tabla de Usuarios
         const val TABLE_USERS = "users"
@@ -48,7 +48,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     }
 
     /**
-     * `onCreate` se llama la primera vez que se accede a la base de datos. 
+     * `onCreate` se llama la primera vez que se accede a la base de datos.
      * Aquí es donde se deben ejecutar las sentencias SQL para crear las tablas.
      */
     override fun onCreate(db: SQLiteDatabase) {
@@ -67,7 +67,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     /**
      * `onUpgrade` se llama cuando la `DATABASE_VERSION` es mayor que la versión de la base de datos existente.
-     * La estrategia aquí es simple: eliminar las tablas antiguas y volver a crearlas. 
+     * La estrategia aquí es simple: eliminar las tablas antiguas y volver a crearlas.
      * En una app de producción, se implementaría una migración de datos para no perder la información del usuario.
      */
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -85,11 +85,24 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         val initialProducts = listOf(
             ContentValues().apply {
                 put(COLUMN_PRODUCT_NAME, "Headset Gamer HyperX Cloud Alpha")
-                put(COLUMN_PRODUCT_DESCRIPTION, "Audífonos con micrófono y almohadillas de espuma viscoelástica...")
+                put(COLUMN_PRODUCT_DESCRIPTION, "Audífonos con micrófono y almohadillas de espuma viscoelástica con tecnología HyperX Dual Chamber para un sonido más nítido y menos distorsión.")
                 put(COLUMN_PRODUCT_PRICE, 99990)
-                // ... otros datos de productos
+                put(COLUMN_PRODUCT_CATEGORY, "Audio")
+                put(COLUMN_PRODUCT_STOCK, 15)
+                put(COLUMN_PRODUCT_IMAGE, "https://media.solotodo.com/media/products/133461_picture_1652988450.webp")
+                put(COLUMN_PRODUCT_FEATURES, "Sonido 7.1, Inalámbrico, Cancelación de ruido")
+                put(COLUMN_PRODUCT_PROVIDER, "HyperX")
             },
-            // ... más productos
+            ContentValues().apply {
+                put(COLUMN_PRODUCT_NAME, "Mouse Gamer Logitech G502")
+                put(COLUMN_PRODUCT_DESCRIPTION, "Mouse para juegos de alto rendimiento con sensor HERO 25K, el sensor para juegos más preciso de Logitech hasta la fecha. Con 11 botones programables, iluminación RGB LIGHTSYNC y pesas ajustables.")
+                put(COLUMN_PRODUCT_PRICE, 69990)
+                put(COLUMN_PRODUCT_CATEGORY, "Periféricos")
+                put(COLUMN_PRODUCT_STOCK, 25)
+                put(COLUMN_PRODUCT_IMAGE, "https://media.solotodo.com/media/products/56793_picture_1583595568.webp")
+                put(COLUMN_PRODUCT_FEATURES, "11 botones programables, Pesas ajustables, RGB Lightsync")
+                put(COLUMN_PRODUCT_PROVIDER, "Logitech")
+            }
         )
 
         initialProducts.forEach { values ->
