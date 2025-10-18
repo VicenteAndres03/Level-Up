@@ -29,29 +29,43 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 
+/**
+ * `CartScreen` es la pantalla que muestra al usuario los productos que ha añadido a su carrito de compras.
+ * Permite ver la lista de productos, modificar las cantidades y finalizar la compra.
+ *
+ * @param username El nombre de usuario del usuario actual, necesario para obtener su ID y su carrito.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CartScreen(username: String) {
+    // Se obtiene el contexto actual, necesario para los repositorios y Toasts.
     val context = LocalContext.current
+    // Se instancian los repositorios para acceder a la base de datos.
     val userRepository = remember { UserRepository(context) }
     val cartRepository = remember { CartRepository(context) }
+    // Estado para almacenar los productos y sus cantidades en el carrito.
     var cartItems by remember { mutableStateOf<Map<Producto, Int>>(emptyMap()) }
+    // Estado para almacenar el ID del usuario.
     var userId by remember { mutableStateOf<Long?>(null) }
 
+    // Calcula el precio total del carrito sumando el precio de cada producto por su cantidad.
     val total = cartItems.entries.sumOf { (producto, quantity) -> producto.precio * quantity }
 
+    // Función para recargar los productos del carrito desde la base de datos.
     fun refreshCartItems(uid: Long) {
         cartItems = cartRepository.getCartItems(uid)
     }
 
+    // `LaunchedEffect` se usa para obtener el ID del usuario de forma asíncrona cuando el `username` cambia.
     LaunchedEffect(username) {
         val user = userRepository.getUserByUsername(username)
         userId = user?.id
         userId?.let {
-            refreshCartItems(it)
+            refreshCartItems(it) // Carga los productos del carrito una vez que se tiene el ID.
         }
     }
 
+    // `Scaffold` proporciona la estructura básica de la pantalla (barra superior, contenido, etc.).
     Scaffold(
         containerColor = PrimaryDark,
         topBar = {
@@ -61,13 +75,15 @@ fun CartScreen(username: String) {
             )
         }
     ) { innerPadding ->
+        // Columna principal que organiza el contenido de la pantalla.
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
+            // Comprueba si el carrito está vacío.
             if (cartItems.isEmpty()) {
-                // Mensaje de carrito vacío
+                // Si está vacío, muestra un mensaje centrado.
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(
@@ -85,9 +101,9 @@ fun CartScreen(username: String) {
                     }
                 }
             } else {
-                // Lista de productos en el carrito
+                // Si no está vacío, muestra la lista de productos.
                 LazyColumn(
-                    modifier = Modifier.weight(1f), // Ocupa el espacio disponible
+                    modifier = Modifier.weight(1f), // Ocupa todo el espacio vertical disponible, dejando sitio para el resumen.
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
@@ -98,7 +114,7 @@ fun CartScreen(username: String) {
                             onIncrease = {
                                 userId?.let { uid ->
                                     cartRepository.addToCart(uid, producto.id)
-                                    refreshCartItems(uid)
+                                    refreshCartItems(uid) // Recarga el carrito para mostrar la nueva cantidad.
                                 }
                             },
                             onDecrease = {
@@ -117,13 +133,14 @@ fun CartScreen(username: String) {
                     }
                 }
 
-                // Sección de resumen de la compra
+                // Sección fija en la parte inferior que muestra el resumen de la compra.
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     color = PrimaryDark,
-                    shadowElevation = 8.dp // Sombra para separar visualmente
+                    shadowElevation = 8.dp // Añade una sombra para destacar la sección.
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
+                        // Fila para mostrar el texto "Total:" y el importe.
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -138,12 +155,13 @@ fun CartScreen(username: String) {
                             )
                         }
                         Spacer(modifier = Modifier.height(16.dp))
+                        // Botón para finalizar la compra.
                         Button(
                             onClick = {
                                 userId?.let {
-                                    cartRepository.clearCart(it)
+                                    cartRepository.clearCart(it) // Limpia el carrito en la base de datos.
                                     Toast.makeText(context, "Compra realizada con éxito", Toast.LENGTH_SHORT).show()
-                                    refreshCartItems(it)
+                                    refreshCartItems(it) // Recarga el carrito para que aparezca vacío.
                                 }
                             },
                             modifier = Modifier
@@ -166,6 +184,15 @@ fun CartScreen(username: String) {
     }
 }
 
+/**
+ * `CartItem` es el Composable que representa un solo artículo en la lista del carrito.
+ *
+ * @param producto El objeto `Producto` a mostrar.
+ * @param quantity La cantidad de este producto en el carrito.
+ * @param onIncrease Lambda que se ejecuta para aumentar la cantidad.
+ * @param onDecrease Lambda que se ejecuta para disminuir la cantidad.
+ * @param onRemove Lambda que se ejecuta para eliminar todas las unidades del producto.
+ */
 @Composable
 fun CartItem(
     producto: Producto,
@@ -184,6 +211,7 @@ fun CartItem(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Imagen del producto, cargada de forma asíncrona.
             AsyncImage(
                 model = producto.imagen,
                 contentDescription = producto.nombre,
@@ -194,6 +222,7 @@ fun CartItem(
                 contentScale = ContentScale.Crop
             )
             Spacer(modifier = Modifier.width(16.dp))
+            // Columna con el nombre y el precio del producto.
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = producto.nombre,
@@ -211,8 +240,10 @@ fun CartItem(
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))
+            // Columna con los controles para modificar la cantidad.
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Botones para disminuir y aumentar la cantidad.
                     SmallIconButton(onClick = onDecrease, icon = Icons.Default.Remove)
                     Text(
                         text = quantity.toString(),
@@ -223,6 +254,7 @@ fun CartItem(
                     )
                     SmallIconButton(onClick = onIncrease, icon = Icons.Default.Add)
                 }
+                // Botón para eliminar completamente el producto del carrito.
                 IconButton(onClick = onRemove) {
                     Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = DestructiveColor.copy(alpha = 0.8f))
                 }
@@ -231,6 +263,12 @@ fun CartItem(
     }
 }
 
+/**
+ * `SmallIconButton` es un botón pequeño y reutilizable con un ícono, usado para los controles de cantidad.
+ *
+ * @param onClick La acción a ejecutar cuando se pulsa el botón.
+ * @param icon El `ImageVector` (ícono) a mostrar en el botón.
+ */
 @Composable
 fun SmallIconButton(onClick: () -> Unit, icon: ImageVector) {
     Button(
