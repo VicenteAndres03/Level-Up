@@ -20,7 +20,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
      */
     companion object {
         private const val DATABASE_NAME = "level_up.db"
-        private const val DATABASE_VERSION = 8 // Se incrementa cada vez que hay un cambio en el esquema.
+        private const val DATABASE_VERSION = 9 // Se incrementa cada vez que hay un cambio en el esquema.
 
         // Tabla de Usuarios
         const val TABLE_USERS = "users"
@@ -88,7 +88,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 put(COLUMN_PRODUCT_DESCRIPTION, "Audífonos con micrófono y almohadillas de espuma viscoelástica con tecnología HyperX Dual Chamber para un sonido más nítido y menos distorsión.")
                 put(COLUMN_PRODUCT_PRICE, 99990)
                 put(COLUMN_PRODUCT_CATEGORY, "Audio")
-                put(COLUMN_PRODUCT_STOCK, 15)
+                put(COLUMN_PRODUCT_STOCK, 3)
                 put(COLUMN_PRODUCT_IMAGE, "https://media.solotodo.com/media/products/133461_picture_1652988450.webp")
                 put(COLUMN_PRODUCT_FEATURES, "Sonido 7.1, Inalámbrico, Cancelación de ruido")
                 put(COLUMN_PRODUCT_PROVIDER, "HyperX")
