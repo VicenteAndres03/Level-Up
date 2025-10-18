@@ -78,8 +78,12 @@ fun ProductsScreen(
                 onAddToCartClick = {
                     // Solo se puede añadir al carrito si hay un usuario logueado.
                     user?.id?.let { userId ->
-                        cartRepository.addToCart(userId, producto.id)
-                        Toast.makeText(context, "${producto.nombre} añadido al carrito", Toast.LENGTH_SHORT).show()
+                        val itemsAdded = cartRepository.addToCart(userId, producto.id)
+                        if (itemsAdded != -1L) {
+                            Toast.makeText(context, "${producto.nombre} añadido al carrito", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, "No hay más stock para ${producto.nombre}", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 },
                 isLoggedIn = user != null // Se pasa el estado de login al item.
@@ -133,13 +137,23 @@ fun ProductItem(
                 // El botón "Añadir al carrito" solo se muestra si el usuario está logueado.
                 if (isLoggedIn) {
                     Spacer(modifier = Modifier.height(8.dp))
+                    val isOutOfStock = producto.stock <= 0
                     Button(
                         onClick = onAddToCartClick,
+                        enabled = !isOutOfStock, // Se deshabilita el botón si el stock es 0 o menos.
                         shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF8C00)),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFFF8C00),
+                            disabledContainerColor = Color.Gray // Color cuando el botón está deshabilitado.
+                        ),
                         modifier = Modifier.align(Alignment.End)
                     ) {
-                        Text("Añadir al carrito", color = Color(0xFF0A1931), fontSize = 12.sp)
+                        // El texto del botón cambia si el producto está agotado.
+                        Text(
+                            text = if (isOutOfStock) "Agotado" else "Añadir al carrito",
+                            color = if (isOutOfStock) Color.White else Color(0xFF0A1931),
+                            fontSize = 12.sp
+                        )
                     }
                 }
             }
