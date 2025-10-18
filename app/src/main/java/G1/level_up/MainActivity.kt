@@ -1,6 +1,7 @@
 package G1.level_up
 
 import G1.level_up.Navigation.AppNavigation
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,6 +16,9 @@ import androidx.activity.enableEdgeToEdge
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Bloquea la orientación de la pantalla en modo vertical.
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         // `enableEdgeToEdge` permite que la aplicación se dibuje a pantalla completa, es decir,
         // detrás de las barras de estado y navegación del sistema. Esto es clave para diseños modernos
