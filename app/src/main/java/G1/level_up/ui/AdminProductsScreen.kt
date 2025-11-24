@@ -29,36 +29,24 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 
-/**
- * `AdminProductsScreen` es la pantalla principal para la gestión de productos por parte del administrador.
- * Permite ver, añadir, editar y eliminar productos.
- *
- * @param navController El controlador de navegación para moverse entre pantallas.
- * @param vm El ViewModel `AdminProductsViewModel` que gestiona la lógica de negocio y el estado de los productos.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminProductsScreen(navController: NavController, vm: AdminProductsViewModel = viewModel()) {
-    // Se obtienen los estados del ViewModel: la lista de productos y el estado de carga.
     val products by vm.products.collectAsState()
     val isLoading by vm.isLoading.collectAsState()
 
-    // Estados para controlar la visibilidad de los diálogos de edición y eliminación.
     var showDialog by remember { mutableStateOf(false) }
-    var selectedProduct by remember { mutableStateOf<Producto?>(null) } // Almacena el producto seleccionado para editar o eliminar.
+    var selectedProduct by remember { mutableStateOf<Producto?>(null) }
     var showDeleteConfirmation by remember { mutableStateOf(false) }
 
-    // `Scaffold` proporciona la estructura básica de la pantalla (barra superior, botón flotante, etc.).
     Scaffold(
-        containerColor = PrimaryDark, // Color de fondo.
+        containerColor = PrimaryDark,
         topBar = {
-            // Barra de la aplicación en la parte superior.
             TopAppBar(
                 title = { Text("Gestionar Productos", color = TextColor) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = PrimaryDark),
-                actions = { // Acciones en la parte derecha de la barra.
+                actions = {
                     IconButton(onClick = {
-                        // Navega a la pantalla de login y limpia el historial de navegación.
                         navController.navigate(Screen.Login.route) {
                             popUpTo(navController.graph.startDestinationId) { inclusive = true }
                         }
@@ -68,10 +56,9 @@ fun AdminProductsScreen(navController: NavController, vm: AdminProductsViewModel
                 }
             )
         },
-        // Botón de acción flotante para añadir nuevos productos.
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { selectedProduct = null; showDialog = true }, // Al hacer clic, abre el diálogo en modo "añadir".
+                onClick = { selectedProduct = null; showDialog = true },
                 containerColor = ButtonAccent,
                 contentColor = PrimaryDark
             ) {
@@ -79,25 +66,21 @@ fun AdminProductsScreen(navController: NavController, vm: AdminProductsViewModel
             }
         }
     ) { innerPadding ->
-        // Contenido principal de la pantalla.
         Box(modifier = Modifier.padding(innerPadding)) {
-            // Muestra un indicador de carga mientras los productos se están obteniendo.
             if (isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = PrimaryAccent)
                 }
             } else {
-                // Muestra la lista de productos en una `LazyColumn` para un rendimiento eficiente.
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(16.dp)
                 ) {
-                    items(products) { product ->
-                        // `ProductItemAdmin` es el Composable para cada elemento de la lista.
+                    items(products, key = { it.id }) { product ->
                         ProductItemAdmin(
                             product = product,
-                            onEdit = { selectedProduct = it; showDialog = true }, // Abre el diálogo en modo "editar".
-                            onDelete = { selectedProduct = it; showDeleteConfirmation = true } // Abre el diálogo de confirmación de eliminación.
+                            onEdit = { selectedProduct = it; showDialog = true },
+                            onDelete = { selectedProduct = it; showDeleteConfirmation = true }
                         )
                     }
                 }
@@ -105,20 +88,17 @@ fun AdminProductsScreen(navController: NavController, vm: AdminProductsViewModel
         }
     }
 
-    // Muestra el diálogo de edición si `showDialog` es verdadero.
     if (showDialog) {
         ProductEditDialog(
-            product = selectedProduct, // Pasa el producto seleccionado, o null si se está añadiendo uno nuevo.
-            onDismiss = { showDialog = false }, // Cierra el diálogo.
+            product = selectedProduct,
+            onDismiss = { showDialog = false },
             onSave = {
-                // Guarda el producto (añade si es nuevo, actualiza si ya existe).
                 if (it.id == 0) vm.addProduct(it) else vm.updateProduct(it)
                 showDialog = false
             }
         )
     }
 
-    // Muestra el diálogo de confirmación de eliminación si `showDeleteConfirmation` es verdadero.
     if (showDeleteConfirmation) {
         DeleteConfirmationDialog(
             product = selectedProduct!!,
@@ -131,10 +111,6 @@ fun AdminProductsScreen(navController: NavController, vm: AdminProductsViewModel
     }
 }
 
-/**
- * Composable para mostrar un solo producto en la lista de administración.
- * Incluye la información del producto y los botones para editar y eliminar.
- */
 @Composable
 fun ProductItemAdmin(product: Producto, onEdit: (Producto) -> Unit, onDelete: (Producto) -> Unit) {
     Card(
@@ -142,24 +118,22 @@ fun ProductItemAdmin(product: Producto, onEdit: (Producto) -> Unit, onDelete: (P
             .fillMaxWidth()
             .padding(vertical = 8.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = SecondaryDark) // Color de fondo de la tarjeta.
+        colors = CardDefaults.cardColors(containerColor = SecondaryDark)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Imagen del producto cargada de forma asíncrona con Coil.
             AsyncImage(
                 model = product.imagen,
                 contentDescription = product.nombre,
-                placeholder = painterResource(id = R.drawable.logolevelup), // Imagen de reserva.
+                placeholder = painterResource(id = R.drawable.logolevelup),
                 modifier = Modifier
                     .size(80.dp)
                     .clip(RoundedCornerShape(12.dp)),
-                contentScale = ContentScale.Crop // Escala la imagen para que llene el espacio.
+                contentScale = ContentScale.Crop
             )
             Spacer(modifier = Modifier.width(16.dp))
-            // Columna con el nombre, precio y stock.
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = product.nombre,
@@ -176,7 +150,7 @@ fun ProductItemAdmin(product: Producto, onEdit: (Producto) -> Unit, onDelete: (P
                 )
                 Text(
                     text = "Stock: ${product.stock}",
-                    color = when { // El color del texto cambia según el nivel de stock.
+                    color = when {
                         product.stock == 0 -> DestructiveColor
                         product.stock <= 5 -> Color.Yellow
                         else -> TextColor.copy(alpha = 0.8f)
@@ -186,7 +160,6 @@ fun ProductItemAdmin(product: Producto, onEdit: (Producto) -> Unit, onDelete: (P
                 )
             }
             Spacer(modifier = Modifier.width(8.dp))
-            // Columna con los botones de acción.
             Column {
                 IconButton(onClick = { onEdit(product) }) {
                     Icon(Icons.Default.Edit, contentDescription = "Editar", tint = PrimaryAccent)
@@ -199,14 +172,9 @@ fun ProductItemAdmin(product: Producto, onEdit: (Producto) -> Unit, onDelete: (P
     }
 }
 
-/**
- * Diálogo para añadir o editar un producto.
- * Contiene campos de texto para todas las propiedades del producto.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductEditDialog(product: Producto?, onDismiss: () -> Unit, onSave: (Producto) -> Unit) {
-    // Estados para cada campo del formulario.
     var nombre by remember { mutableStateOf(product?.nombre ?: "") }
     var descripcion by remember { mutableStateOf(product?.descripcion ?: "") }
     var precio by remember { mutableStateOf(product?.precio?.toString() ?: "") }
@@ -221,9 +189,8 @@ fun ProductEditDialog(product: Producto?, onDismiss: () -> Unit, onSave: (Produc
         containerColor = PrimaryDark,
         titleContentColor = TextColor,
         textContentColor = TextColor,
-        title = { Text(if (product == null) "Añadir Producto" else "Editar Producto") }, // Título dinámico.
+        title = { Text(if (product == null) "Añadir Producto" else "Editar Producto") },
         text = {
-            // `LazyColumn` para que los campos sean desplazables si no caben en la pantalla.
             LazyColumn {
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -239,10 +206,9 @@ fun ProductEditDialog(product: Producto?, onDismiss: () -> Unit, onSave: (Produc
                 }
             }
         },
-        confirmButton = { // Botón para guardar los cambios.
+        confirmButton = {
             Button(
                 onClick = {
-                    // Se crea o actualiza el objeto `Producto` y se llama a `onSave`.
                     val updatedProduct = product?.copy(
                         nombre = nombre,
                         descripcion = descripcion,
@@ -260,7 +226,7 @@ fun ProductEditDialog(product: Producto?, onDismiss: () -> Unit, onSave: (Produc
                 Text("Guardar", color = PrimaryDark)
             }
         },
-        dismissButton = { // Botón para cancelar.
+        dismissButton = {
             Button(onClick = onDismiss, colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)) {
                 Text("Cancelar")
             }
@@ -268,9 +234,6 @@ fun ProductEditDialog(product: Producto?, onDismiss: () -> Unit, onSave: (Produc
     )
 }
 
-/**
- * Un campo de texto personalizado `OutlinedTextField` para usar en los diálogos.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LevelUpTextFieldDialog(value: String, onValueChange: (String) -> Unit, label: String) {
@@ -294,10 +257,6 @@ fun LevelUpTextFieldDialog(value: String, onValueChange: (String) -> Unit, label
     )
 }
 
-
-/**
- * Diálogo para confirmar la eliminación de un producto.
- */
 @Composable
 fun DeleteConfirmationDialog(product: Producto, onDismiss: () -> Unit, onConfirm: (Producto) -> Unit) {
     AlertDialog(
@@ -307,7 +266,7 @@ fun DeleteConfirmationDialog(product: Producto, onDismiss: () -> Unit, onConfirm
         textContentColor = TextColor,
         title = { Text("Eliminar Producto") },
         text = { Text("¿Estás seguro de que quieres eliminar ${product.nombre}?") },
-        confirmButton = { // Botón para confirmar la eliminación.
+        confirmButton = {
             Button(
                 onClick = { onConfirm(product) },
                 colors = ButtonDefaults.buttonColors(containerColor = DestructiveColor)
@@ -315,7 +274,7 @@ fun DeleteConfirmationDialog(product: Producto, onDismiss: () -> Unit, onConfirm
                 Text("Eliminar")
             }
         },
-        dismissButton = { // Botón para cancelar.
+        dismissButton = {
             Button(onClick = onDismiss, colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)) {
                 Text("Cancelar")
             }
