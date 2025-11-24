@@ -2,6 +2,8 @@ package G1.level_up.ui
 
 import G1.level_up.Navigation.Screen
 import G1.level_up.R
+import G1.level_up.viewmodel.HomeViewModel
+import android.app.Application
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -19,11 +21,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 
 /**
@@ -85,11 +89,27 @@ fun Header(navController: NavController, currentUsername: String?, onLogout: () 
  */
 @Composable
 fun Cuerpo(navController: NavController, currentUsername: String?, modifier: Modifier = Modifier) {
+    // Se obtiene el ViewModel para acceder a los datos, incluyendo el precio de la API externa
+    val context = LocalContext.current
+    val factory = HomeViewModelFactory(context.applicationContext as Application)
+    val viewModel: HomeViewModel = viewModel(factory = factory)
+    // Se observa el precio de Bitcoin desde el ViewModel (Consumo de API Externa)
+    val bitcoinPrice by viewModel.bitcoinPrice.collectAsState()
+
     Column(
         modifier = modifier.fillMaxSize().background(Brush.verticalGradient(colors = listOf(Color(0xFF0A1931), Color(0xFF061121)))).padding(vertical = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
+        // Muestra el precio obtenido de la API externa (ej. Bitcoin)
+        Text(
+            text = bitcoinPrice,
+            color = Color(0xFFFF8C00),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
         ActionCard(
             title = "Nuestros productos a un buen precio",
             imageRes = R.drawable.ps5,
