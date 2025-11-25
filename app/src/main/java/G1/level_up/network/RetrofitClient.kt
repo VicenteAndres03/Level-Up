@@ -10,9 +10,10 @@ import retrofit2.converter.gson.GsonConverterFactory
  * Es el punto de partida para todas las llamadas a los microservicios.
  */
 object RetrofitClient {
-    // IMPORTANTE: Cambia esta URL por la dirección base de tu microservicio (ej: http://10.0.2.2:8080/api/)
+    // Se apunta a la raíz del servidor. Las rutas completas (ej: /api/products) 
+    // se definirán en la interfaz de servicio.
     // El emulador de Android usa 10.0.2.2 para acceder a localhost.
-    private const val BASE_URL = "http://10.0.2.2:8080/api/"
+    private const val BASE_URL = "http://10.0.2.2:8080/"
 
     /**
      * Instancia de Retrofit, usa Gson para convertir JSON a objetos Kotlin.
