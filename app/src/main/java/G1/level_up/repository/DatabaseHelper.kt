@@ -6,6 +6,7 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import android.util.Log
 
 class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
@@ -95,6 +96,25 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         }
         cursor.close()
         return products
+    }
+
+    // [NUEVA FUNCIÓN AÑADIDA]
+    fun addProductLocal(product: Producto): Long {
+        val db = writableDatabase
+        val values = ContentValues().apply {
+            // No se pasa el ID, permitiendo que SQLite lo genere automáticamente
+            put(COLUMN_PRODUCT_NAME, product.nombre)
+            put(COLUMN_PRODUCT_DESCRIPTION, product.descripcion)
+            put(COLUMN_PRODUCT_PRICE, product.precio)
+            put(COLUMN_PRODUCT_CATEGORY, product.categoria)
+            put(COLUMN_PRODUCT_STOCK, product.stock)
+            put(COLUMN_PRODUCT_IMAGE, product.imagen)
+            put(COLUMN_PRODUCT_FEATURES, product.caracteristicas)
+            put(COLUMN_PRODUCT_PROVIDER, product.proveedor)
+        }
+        val newId = db.insert(TABLE_PRODUCTS, null, values)
+        Log.d("DatabaseHelper", "Producto guardado localmente con ID: $newId")
+        return newId
     }
 
     fun syncProducts(products: List<Producto>) {

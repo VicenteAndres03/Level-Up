@@ -19,25 +19,36 @@ class ProductoRepository(context: Context) {
                 dbHelper.syncProducts(products)
                 products
             } else {
-                Log.e("ProductoRepository", "Error al obtener productos: ${response.code()} ${response.message()}")
+                Log.e("ProductoRepository", "Error al obtener productos: ${response.code()} ${response.message()}. Usando datos locales.")
+                // [FALLBACK INICIAL] Si la API responde con un error HTTP, usamos el caché.
                 dbHelper.obtenerProductosLocal()
             }
         } catch (e: Exception) {
-            Log.e("ProductoRepository", "Excepción al obtener productos (Fallo de red): ${e.message}")
+            Log.e("ProductoRepository", "Excepción al obtener productos (Fallo de red): ${e.message}. Usando datos locales.")
+            // [FALLBACK DE RED] Si falla la conexión, usamos el caché.
             dbHelper.obtenerProductosLocal()
         }
     }
 
-    suspend fun addProduct(product: Producto): Boolean {
+    // Retorna el producto con el ID generado, o null si falla.
+    suspend fun addProduct(product: Producto): Producto? {
         return try {
             val response = apiService.addProduct(product)
-            if (!response.isSuccessful) {
+            if (response.isSuccessful && response.body() != null) {
+                return response.body() // Éxito con el backend
+            } else {
                 Log.e("ProductoRepository", "Error al añadir producto: ${response.code()} ${response.message()}")
+                return null
             }
-            response.isSuccessful
         } catch (e: Exception) {
-            Log.e("ProductoRepository", "Excepción al añadir producto: ${e.message}")
-            false
+            Log.e("ProductoRepository", "Excepción al añadir producto (Fallo de red): ${e.message}. Guardando en local.")
+
+            // [MODIFICACIÓN CLAVE] FALLBACK A LOCAL: Guardar en SQLite.
+            // Creamos un producto temporal (id=0) para que SQLite genere el ID.
+            val newLocalId = dbHelper.addProductLocal(product.copy(id = 0))
+
+            // Devolvemos el producto recién guardado con el ID local
+            return dbHelper.getProductByIdLocal(newLocalId.toInt())
         }
     }
 
