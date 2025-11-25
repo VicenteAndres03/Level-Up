@@ -38,20 +38,20 @@ class AdminProductsViewModel(application: Application) : AndroidViewModel(applic
 
     fun addProduct(product: Producto) {
         viewModelScope.launch {
-            // Esperamos el objeto Producto (del API si funciona, o de SQLite si falla la red).
+            // Esperamos el objeto Producto con el ID generado.
             val newProduct = withContext(Dispatchers.IO) {
                 productoRepository.addProduct(product)
             }
 
-            // Si el objeto no es nulo, la adición fue exitosa (API o local).
+            // Si el objeto no es nulo, la operación fue exitosa.
             if (newProduct != null) {
-                // SOLUCIÓN: Actualizamos la lista del ViewModel inmediatamente para refrescar la UI.
+                // SOLUCIÓN: Actualizamos la lista del ViewModel inmediatamente.
                 _products.value = _products.value + newProduct
 
-                // Se llama al refresh para asegurar que la vista tiene la lista completa y sincronizada,
-                // usando los datos de la API (si funciona) o la caché local (si la API falla).
+                // Refrescamos después para que la caché local (SQLite) se sincronice.
                 refreshProducts()
             }
+            // Si newProduct es null, el producto no se añadió (revisar logs de repositorio).
         }
     }
 
