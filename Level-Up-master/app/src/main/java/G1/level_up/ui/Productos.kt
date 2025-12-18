@@ -1,11 +1,10 @@
 package G1.level_up.ui
 
-
 import G1.level_up.R
 import G1.level_up.model.Producto
 import G1.level_up.model.User
 import G1.level_up.repository.CartRepository
-import G1.level_up.repository.UserRepository
+import G1.level_up.repository.ProductoRepository // Importación esencial para el backend
 import G1.level_up.viewmodel.HomeViewModel
 import android.app.Application
 import android.widget.Toast
@@ -36,124 +35,46 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 
 /**
- * `ProductsScreen` muestra una lista de todos los productos disponibles en la tienda.
- * Los usuarios pueden ver los productos y, si han iniciado sesión, añadirlos a su carrito.
- *
- * @param modifier Modificador de Compose para personalizar el diseño.
- * @param username El nombre del usuario que ha iniciado sesión, o `null` si nadie ha iniciado sesión.
+ * ProductsScreen muestra la lista de productos obtenida desde el backend de Spring Boot.
  */
 @Composable
 fun ProductsScreen(
-    modifier: Modifier = Modifier,
-    username: String?
+    user: User,
+    viewModel: HomeViewModel = viewModel(
+        factory = HomeViewModelFactory(LocalContext.current.applicationContext as Application)
+    )
 ) {
+    val productos by viewModel.productos.collectAsState() // Observa los productos del StateFlow
     val context = LocalContext.current
-    // Se utiliza una Factory para poder pasar el contexto de Application al HomeViewModel.
-    val factory = HomeViewModelFactory(context.applicationContext as Application)
-    val viewModel: HomeViewModel = viewModel(factory = factory)
-    val productos by viewModel.productos.collectAsState() // Se observa la lista de productos del ViewModel.
-    val userRepository = remember { UserRepository(context) }
     val cartRepository = remember { CartRepository(context) }
-    var user by remember { mutableStateOf<User?>(null) }
 
-    // `LaunchedEffect` se usa para buscar los datos del usuario cuando el `username` cambia.
-    LaunchedEffect(username) {
-        user = if (username != null) {
-            userRepository.getUserByUsername(username)
-        } else {
-            null
-        }
-    }
-
-    // `LazyColumn` es una lista perezosa que solo renderiza los elementos visibles en pantalla.
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Color(0xFF0A1931)), // Fondo oscuro de la app
-        contentPadding = PaddingValues(vertical = 16.dp)
-    ) {
-        items(productos) { producto ->
-            ProductItem(
-                producto = producto,
-                onAddToCartClick = {
-                    // Solo se puede añadir al carrito si hay un usuario logueado.
-                    user?.id?.let { userId ->
-                        val itemsAdded = cartRepository.addToCart(userId, producto.id)
-                        if (itemsAdded != -1L) {
-                            Toast.makeText(context, "${producto.nombre} añadido al carrito", Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(context, "No hay más stock para ${producto.nombre}", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                },
-                isLoggedIn = user != null // Se pasa el estado de login al item.
-            )
-        }
-    }
-}
-
-/**
- * `ProductItem` es un Composable que representa la tarjeta de un solo producto en la lista.
- *
- * @param producto El objeto `Producto` a mostrar.
- * @param onAddToCartClick Lambda que se ejecuta al pulsar el botón de "Añadir al carrito".
- * @param isLoggedIn Booleano que indica si el usuario ha iniciado sesión.
- */
-@Composable
-fun ProductItem(
-    producto: Producto,
-    onAddToCartClick: () -> Unit,
-    isLoggedIn: Boolean
-) {
-    Card(
+    Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1A2942))
+            .fillMaxSize()
+            .background(Color(0xFF0A1931))
+            .padding(16.dp)
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Text(
+            text = "Catálogo de Productos",
+            color = Color.White,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.fillMaxSize()
         ) {
-            // `AsyncImage` (de la librería Coil) carga la imagen del producto desde una URL.
-            AsyncImage(
-                model = producto.imagen,
-                contentDescription = producto.nombre,
-                placeholder = painterResource(id = R.drawable.logolevelup),
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.size(100.dp).clip(RoundedCornerShape(12.dp))
-            )
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(producto.nombre, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(producto.categoria, color = Color.Gray, fontSize = 14.sp)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("$${producto.precio}", color = Color(0xFFFF8C00), fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
-
-                // El botón "Añadir al carrito" solo se muestra si el usuario está logueado.
-                if (isLoggedIn) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    val isOutOfStock = producto.stock <= 0
-                    Button(
-                        onClick = onAddToCartClick,
-                        enabled = !isOutOfStock, // Se deshabilita el botón si el stock es 0 o menos.
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFFF8C00),
-                            disabledContainerColor = Color.Gray // Color cuando el botón está deshabilitado.
-                        ),
-                        modifier = Modifier.align(Alignment.End)
-                    ) {
-                        // El texto del botón cambia si el producto está agotado.
-                        Text(
-                            text = if (isOutOfStock) "Agotado" else "Añadir al carrito",
-                            color = if (isOutOfStock) Color.White else Color(0xFF0A1931),
-                            fontSize = 12.sp
-                        )
+            items(productos) { producto ->
+                ProductItem(producto = producto) {
+                    // CORRECCIÓN: Se debe pasar el ID del usuario y el ID del producto.
+                    // El método devuelve un Long (ID de fila) o -1L si falla.
+                    val cartId = cartRepository.addToCart(user.id, producto.id)
+                    if (cartId != -1L) {
+                        Toast.makeText(context, "${producto.nombre} añadido", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "Sin stock disponible", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -161,16 +82,71 @@ fun ProductItem(
     }
 }
 
+@Composable
+fun ProductItem(producto: Producto, onAddToCart: () -> Unit) {
+    val isOutOfStock = producto.stock <= 0
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF152D50))
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(12.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AsyncImage(
+                model = producto.imagen,
+                contentDescription = producto.nombre,
+                placeholder = painterResource(R.drawable.logolevelup),
+                error = painterResource(R.drawable.logolevelup),
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                contentScale = ContentScale.Crop
+            )
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = producto.nombre, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text(text = producto.categoria, color = Color.Gray, fontSize = 14.sp)
+                Text(text = "$${producto.precio}", color = Color(0xFFFF8C00), fontSize = 16.sp, fontWeight = FontWeight.Bold)
+
+                if (isOutOfStock) {
+                    Text(text = "Agotado", color = Color.Red, fontSize = 12.sp)
+                } else {
+                    Text(text = "Stock: ${producto.stock}", color = Color.LightGray, fontSize = 12.sp)
+                }
+
+                Button(
+                    onClick = onAddToCart,
+                    enabled = !isOutOfStock,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFFF8C00),
+                        disabledContainerColor = Color.Gray
+                    ),
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text(text = if (isOutOfStock) "Agotado" else "Añadir", color = Color.White)
+                }
+            }
+        }
+    }
+}
+
 /**
- * `HomeViewModelFactory` es una clase factory que permite crear una instancia de `HomeViewModel`
- * pasándole dependencias (en este caso, `Application`) a su constructor.
- * Esto es necesario porque los ViewModels con parámetros no pueden ser instanciados directamente por el sistema.
+ * HomeViewModelFactory corregida para instanciar el Repositorio antes de pasarlo al ViewModel.
  */
 class HomeViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
+            // Se crea el repositorio (necesario para el constructor de HomeViewModel)
+            val repository = ProductoRepository(application)
             @Suppress("UNCHECKED_CAST")
-            return HomeViewModel(application) as T
+            return HomeViewModel(repository) as T
         }
         throw IllegalArgumentException("Clase de ViewModel desconocida")
     }

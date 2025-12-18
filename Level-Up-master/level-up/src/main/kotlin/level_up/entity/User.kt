@@ -1,4 +1,4 @@
-package level_up.model
+package level_up.entity
 
 import jakarta.persistence.*
 

@@ -2,6 +2,7 @@ package G1.level_up.ui
 
 import G1.level_up.Navigation.Screen
 import G1.level_up.R
+import G1.level_up.model.User
 import G1.level_up.repository.UserRepository
 import G1.level_up.ui.theme.*
 import android.widget.Toast
@@ -31,11 +32,11 @@ import androidx.navigation.compose.rememberNavController
  * Pantalla de inicio de sesión para usuarios.
  *
  * @param navController El controlador de navegación para manejar las transiciones entre pantallas.
- * @param onLoginSuccess Una función lambda que se ejecuta cuando el inicio de sesión es exitoso, pasando el nombre de usuario.
+ * @param onLoginSuccess Una función lambda que se ejecuta cuando el inicio de sesión es exitoso, pasando el objeto User.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(navController: NavController, onLoginSuccess: (String) -> Unit) {
+fun LoginScreen(navController: NavController, onLoginSuccess: (User) -> Unit) {
     // Estados para almacenar el nombre de usuario (email) y la contraseña introducidos.
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -99,7 +100,7 @@ fun LoginScreen(navController: NavController, onLoginSuccess: (String) -> Unit) 
                 // 2. Comprueba si el usuario existe y si la contraseña coincide.
                 if (user != null && user.pass == password) {
                     // 3. Si las credenciales son correctas, llama a la función de éxito.
-                    onLoginSuccess(email)
+                    onLoginSuccess(user)
                 } else {
                     // 4. Si son incorrectas, muestra un mensaje de error.
                     Toast.makeText(context, "Usuario o contraseña incorrectos", Toast.LENGTH_SHORT).show()

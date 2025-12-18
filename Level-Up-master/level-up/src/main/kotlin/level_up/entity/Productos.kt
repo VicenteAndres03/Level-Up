@@ -4,15 +4,15 @@ import jakarta.persistence.*
 
 @Entity
 @Table(name = "productos")
-class Producto(
+data class Productos(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int = 0,
-    val nombre: String,
-    val descripcion: String,
-    val precio: Int,
-    val categoria: String,
-    val stock: Int,
-    val imagen: String,
-    val caracteristicas: String,
-    val proveedor: String
+    val nombre: String = "",
+    val descripcion: String = "",
+    val precio: Int = 0,
+    val categoria: String = "",
+    val stock: Int = 0,
+    val imagen: String = "",
+    val caracteristicas: String = "",
+    val proveedor: String = ""
 )

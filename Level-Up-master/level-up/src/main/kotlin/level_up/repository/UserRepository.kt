@@ -1,6 +1,6 @@
 package level_up.repository
 
-import level_up.model.User
+import level_up.entity.User
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
