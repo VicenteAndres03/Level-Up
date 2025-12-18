@@ -55,6 +55,10 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.extended)
+    // Retrofit: Para las llamadas al servidor
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    // Converter GSON: Para convertir los datos del servidor (JSON) a clases de Kotlin
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation(libs.androidx.navigation.compose)
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     implementation("io.coil-kt:coil-compose:2.5.0")

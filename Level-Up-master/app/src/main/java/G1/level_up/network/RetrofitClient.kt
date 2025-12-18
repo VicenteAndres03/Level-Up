@@ -1,17 +1,18 @@
 package G1.level_up.network
 
-import G1.level_up.model.Producto
-import G1.level_up.model.User
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.POST
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
-interface LevelUpApiService {
-    // Para obtener los productos del backend
-    @GET("api/productos")
-    suspend fun obtenerProductos(): List<Producto>
+object RetrofitClient {
+    // Esta es tu IP de Ethernet. El puerto 8080 es el estándar de Spring Boot.
+    private const val BASE_URL = "http://192.168.1.165:8080/"
 
-    // Para el login
-    @POST("api/usuarios/login")
-    suspend fun login(@Body user: User): retrofit2.Response<User>
+    val instance: LevelUpApiService by lazy {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create()) // Convierte JSON a clases Kotlin
+            .build()
+
+        retrofit.create(LevelUpApiService::class.java)
+    }
 }
