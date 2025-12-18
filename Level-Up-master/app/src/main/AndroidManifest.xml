@@ -10,6 +10,7 @@
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@drawable/logolevelup"
+        android:usesCleartextTraffic="true"
         android:label="@string/app_name"
         android:roundIcon="@drawable/logolevelup"
         android:supportsRtl="true"
